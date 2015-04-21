@@ -3,7 +3,11 @@
   "name": "angular-ui-bootstrap",
   "version": "0.13.0-SNAPSHOT",
   "homepage": "http://angular-ui.github.io/bootstrap/",
-  "dependencies": {},
+  "dependencies": {
+      "moment": "v2.9.0",
+      "moment-jalaali": "v0.3.4",
+      "momentjs": "~2.10.2"
+  },
   "devDependencies": {
     "grunt": "~0.4.1",
     "grunt-ngdocs": "~0.1.1",
