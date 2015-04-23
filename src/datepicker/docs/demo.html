@@ -3,7 +3,7 @@
 
     <h4>Inline</h4>
     <div style="display:inline-block; min-height:290px;">
-        <datepicker ng-model="dt" min-date="minDate" show-weeks="true" class="well well-sm"></datepicker>
+        <datepicker ng-model="dt" min-date="minDate" show-weeks="true" persian="persian" class="well well-sm"></datepicker>
     </div>
 
     <h4>Popup</h4>
@@ -28,4 +28,5 @@
     <button type="button" class="btn btn-sm btn-default" ng-click="dt = '2009-08-24'">2009-08-24</button>
     <button type="button" class="btn btn-sm btn-danger" ng-click="clear()">Clear</button>
     <button type="button" class="btn btn-sm btn-default" ng-click="toggleMin()" tooltip="After today restriction">Min date</button>
+    <button type="button" class="btn btn-sm btn-default" ng-click="togglePersian()" tooltip="Change Language to Persian">Toggle Language</button>
 </div>

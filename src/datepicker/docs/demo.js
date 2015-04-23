@@ -32,4 +32,9 @@ angular.module('ui.bootstrap.demo').controller('DatepickerDemoCtrl', function ($
 
   $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
   $scope.format = $scope.formats[0];
+  $scope.persian = false;
+  $scope.rtl = false;
+  $scope.togglePersian = function(){
+      $scope.persian = !$scope.persian;
+  };
 });

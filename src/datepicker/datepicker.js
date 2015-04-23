@@ -1,9 +1,10 @@
 angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootstrap.position'])
     .factory('jDateService', [function(){
         return {
+            loadPersian: function(flag){
+                if(flag){moment.loadPersian();} else {moment.locale('en');}
+            },
             dateFilter: function(inputDate, format){
-                //var moment = require('moment-jalaali');
-                moment.loadPersian();
                 var daysOfWeek = [
                     'شنبه',
                     'یکشنبه',
@@ -64,9 +65,9 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 if (jformat == 'E' && parseInt(jRetVal) > 0 && parseInt(jRetVal) < 8) {
                     var captured = parseInt(jRetVal) - 1;
                     if (format == 'EEEE')
-                        jRetVal = daysOfWeek[((captured + 2) % 7)];
+                    {jRetVal = daysOfWeek[((captured + 2) % 7)];}
                     else
-                        jRetVal = daysOfWeekShort[((captured + 2) % 7)];
+                    {jRetVal = daysOfWeekShort[((captured + 2) % 7)];}
                 }
                 return jRetVal;
             },
@@ -89,14 +90,14 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
             sameMonth: function(date, activeDate) {
                 var mDate = moment(date);
                 var mActiveDate = moment(activeDate);
-                return mDate.format("jMM") == mActiveDate.format("jMM");
+                return mDate.format('jMM') == mActiveDate.format('jMM');
             },
             getMonthList: function(date){
                 var mDate = moment(date);
                 var currentYear = mDate.format('jYYYY');
                 var months = new Array(12);
                 for(var i = 1;i<13;i++){
-                    var d = currentYear + '/' + i + '/1'
+                    var d = currentYear + '/' + i + '/1';
                     months[i-1] = [moment(d,'jYYYY/jM/jD').format('YYYY'),moment(d,'jYYYY/jM/jD').format('M') - 1,
                         moment(d,'jYYYY/jM/jD').format('D')];
                 }
@@ -105,12 +106,12 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
             compareMonth: function(date1,date2){
                 var mDate1 = moment(date1);
                 var mDate2 = moment(date2);
-                return mDate1.format("jMM") - mDate2.format("jMM");
+                return mDate1.format('jMM') - mDate2.format('jMM');
             },
             compareYear: function(date1,date2){
                 var mDate1 = moment(date1);
                 var mDate2 = moment(date2);
-                return mDate1.format("jYYYY") - mDate2.format("jYYYY");
+                return mDate1.format('jYYYY') - mDate2.format('jYYYY');
             },
             nextMonth: function(date,step){
                 var jDate = moment(date);
@@ -119,7 +120,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 month = month - 1;  // minus m due to mathematical operations
                 year = year + Math.floor( month / 12 ) ;
                 month = month % 12;
-                if(month < 0)   month +=12;
+                if(month < 0){month +=12;}
                 month = month + 1;  // m real amount
 
                 var nextMonthString = year + '/' + month + '/1' ;
@@ -136,14 +137,14 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 return  new Date(y,m-1,d);
             },
             getStartingYear: function(date, range) {
-                jDate = moment(date);
+                var jDate = moment(date);
                 var year = jDate.format('jYYYY');
                 year = parseInt((year - 1) / range, 10) * range + 1;
                 var yearString = year +'/'+jDate.format('jM')+'/'+jDate.format('jD');
                 var startYear = moment(yearString,'jYYYY/jM/jD').format('YYYY');
                 return parseInt(startYear);
             }
-        }
+        };
     }])
     .constant('datepickerConfig', {
         formatDay: 'dd',
@@ -161,7 +162,8 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
         minDate: null,
         maxDate: null,
         shortcutPropagation: false,
-        rtl: true //  add rtl option
+        rtl: false, //  add rtl option
+        persian: false //  add persian option
     })
 
     .controller('DatepickerController', ['$scope', '$attrs', '$parse', '$interpolate', '$timeout', '$log', 'dateFilter',
@@ -175,7 +177,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
 
             // Configuration attributes
             angular.forEach(['formatDay', 'formatMonth', 'formatYear', 'formatDayHeader', 'formatDayTitle', 'formatMonthTitle',
-                'minMode', 'maxMode', 'showWeeks', 'startingDay', 'yearRange', 'shortcutPropagation', 'rtl'], function( key, index ) {
+                'minMode', 'maxMode', 'showWeeks', 'startingDay', 'yearRange', 'shortcutPropagation', 'rtl', 'persian'], function( key, index ) {
                 self[key] = angular.isDefined($attrs[key]) ? (index < 8 ? $interpolate($attrs[key])($scope.$parent) : $scope.$parent.$eval($attrs[key])) : datepickerConfig[key];
             });
 
@@ -195,6 +197,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
             $scope.maxMode = self.maxMode;
             $scope.uniqueId = 'datepicker-' + $scope.$id + '-' + Math.floor(Math.random() * 10000);
             $scope.rtl = self.rtl;  //  add rtl to scope
+            $scope.persian = self.persian;  //  add persian to scope
             if(angular.isDefined($attrs.initDate)) {
                 this.activeDate = $scope.$parent.$eval($attrs.initDate) || new Date();
                 $scope.$parent.$watch($attrs.initDate, function(initDate){
@@ -292,11 +295,12 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 var year = self.activeDate.getFullYear() + direction * (self.step.years || 0),
                     month = direction * self.activeDate.getMonth() + direction * (self.step.months || 0);
                 var y = direction * (self.step.years || 0), m = direction * (self.step.months || 0),day = 1;
-                if( y != 0 ){
-                    var movedDate = jDateService.nextYear(self.activeDate,y);
+                var movedDate = self.activeDate;
+                if( y !== 0 ){
+                    movedDate = jDateService.nextYear(self.activeDate,y);
                 }
-                if( m != 0 ){
-                    var movedDate = jDateService.nextMonth(self.activeDate,m);
+                if( m !== 0 ){
+                    movedDate = jDateService.nextMonth(self.activeDate,m);
                 }
                 year = movedDate.getFullYear();
                 month = movedDate.getMonth();
@@ -353,6 +357,11 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     self.refreshView();
                 }
             };
+
+            // handle language
+            $scope.$watch('persian', function(val){
+               jDateService.loadPersian($scope.persian);
+            });
         }])
 
     .directive( 'datepicker', function () {
@@ -364,7 +373,9 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 datepickerMode: '=?',
                 dateDisabled: '&',
                 customClass: '&',
-                shortcutPropagation: '&?'
+                shortcutPropagation: '&?',
+                rtl: '@?',
+                persian: '=?'
             },
             require: ['datepicker', '?^ngModel'],
             controller: 'DatepickerController',
