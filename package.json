@@ -5,8 +5,7 @@
   "homepage": "http://angular-ui.github.io/bootstrap/",
   "dependencies": {
       "moment": "v2.9.0",
-      "moment-jalaali": "v0.3.4",
-      "momentjs": "~2.10.2"
+      "moment-jalaali": "v0.3.4"
   },
   "devDependencies": {
     "grunt": "~0.4.1",
