@@ -77,6 +77,14 @@ All settings can be provided as attributes in the `datepicker` or globally confi
  	_(Default: 20)_ :
  	Number of years displayed in year selection.
 
+ * `persian`
+     _(Default: false)_ :
+     Display month with persian language or not.
+
+ * `rtl`
+     _(Default: false)_ :
+     Is it in a rtl container or not. If yes directions will be compatible with a rtl display.
+
 
 ### Popup Settings ###
 
