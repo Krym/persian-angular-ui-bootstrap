@@ -11,7 +11,7 @@
 
 As a front-end developer in Iran using angular for developing single page applications I was always in need of persian angular components.
 The directives presented by angular-ui was always attracting me to use them but the big problem was being rose up when I wanted them to
- be right to left or has persian features like persian calendar. So I forked this open-source project and started to add my desired
+ be *right to left* or having persian features like *persian calendar*. So I forked this open-source project and started to add my desired
  persian features into it.
 
 Persian datepicker is completed till now. I am working on a right to left pagination too and I will be so glad if you suggest other
@@ -19,13 +19,13 @@ Persian datepicker is completed till now. I am working on a right to left pagina
 
 ## Demo
 
-Do you want to see directives in action? Visit http://angular-ui.github.io/bootstrap/!
+Do you want to see directives in action? Visit http://rkeshmir.ir/github/bootstrap/!
 
 ## Installation
 
-Installation is easy as angular-ui-bootstrap has minimal dependencies - only the AngularJS and Bootstrap's CSS are required.
+Installation is easy as angular-ui-bootstrap has minimal dependencies - only the AngularJS, Bootstrap's CSS and moment (plus moment-jalaali plugin) are required.
 After downloading dependencies (or better yet, referencing them from your favourite CDN) you need to download build version of this project. All the files and their purposes are described here: 
-https://github.com/angular-ui/bootstrap/tree/gh-pages#build-files
+https://github.com/rkeshmir/persian-angular-ui-bootstrap/tree/gh-pages#build-files
 Don't worry, if you are not sure which file to take, opt for `ui-bootstrap-tpls-[version].min.js`.
 
 When you are done downloading all the dependencies and project files the only remaining part is to add dependencies on the `ui.bootstrap` AngularJS module:

@@ -1,8 +1,8 @@
 {
-  "author": "https://github.com/angular-ui/bootstrap/graphs/contributors",
-  "name": "angular-ui-bootstrap",
+  "author": "https://github.com/rkeshmir/persian-angular-ui-bootstrap/graphs/contributors",
+  "name": "persian-angular-ui-bootstrap",
   "version": "0.13.0-SNAPSHOT",
-  "homepage": "http://angular-ui.github.io/bootstrap/",
+  "homepage": "http://rkeshmir/github/bootstrap/",
   "dependencies": {
       "moment": "v2.9.0",
       "moment-jalaali": "v0.3.4"
