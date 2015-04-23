@@ -93,6 +93,12 @@ Each directive has its own AngularJS module without any dependencies on other mo
 Directives should work. All the time and in all browsers. This is why all the directives have a comprehensive suite of unit tests. All the automated tests are executed on each checkin in several browsers: Chrome, ChromeCanary, Firefox, Opera, Safari, IE9.
 In fact we are fortunate enough to **benefit from the same testing infrastructure as AngularJS**!
 
+### Persian Version
+
+Angular is a world class level js library that most of the time is the first choice to write a single page application. One its best facilities is its directives that helps developers to use modular two-way binding components. So it is important for angular
+to have versions compatible with local needs all over the world. This version is a starting to present some persian facilities.
+
+
 ## Support
 
 If you are having problems making some directives work, there are several ways to get help:
