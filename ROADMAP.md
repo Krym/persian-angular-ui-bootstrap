@@ -52,7 +52,7 @@ Who will take the lead regarding any pull requests or decisions for a a directiv
   <td>tabs</td><td>@ajoslin</td>
 </tr>
 <tr>
-  <td>timepicker</td><td>@bekos</td>
+  <td>timepicker</td><td>@bekos, @rkeshmir</td>
 </tr>
 <tr>
   <td>transition</td><td>@frozen, remove (@chrisirhc)</td>
