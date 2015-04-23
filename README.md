@@ -35,7 +35,7 @@ angular.module('myModule', ['ui.bootstrap']);
 ```
 
 Project files are also available through your favourite package manager:
-* **Bower**: `bower install angular-bootstrap`
+* **Bower**: `bower install persian-angular-ui-bootstrap`
 * **NuGet**: https://nuget.org/packages/Angular.UI.Bootstrap/
 
 ## Support
