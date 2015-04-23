@@ -3,7 +3,7 @@ angular.module('ui.bootstrap.demo', ['ui.bootstrap', 'plunker', 'ngTouch'], func
   FastClick.attach(document.body);
   delete $httpProvider.defaults.headers.common['X-Requested-With'];
 })
-    .controller("MainCtrl",MainCtrl)
+    .controller('MainCtrl',MainCtrl)
     .run(['$location', function($location){
   //Allows us to navigate to the correct element on initialization
   if ($location.path() !== '' && $location.path() !== '/') {
@@ -22,7 +22,7 @@ angular.module('ui.bootstrap.demo', ['ui.bootstrap', 'plunker', 'ngTouch'], func
     get: function () {
       return $q.all({
         moduleMap: getModuleMap(),
-        rawFiles: getRawFiles(),
+        rawFiles: getRawFiles()
       });
     }
   };
@@ -51,7 +51,7 @@ function MainCtrl($scope, $http, $document, $modal, orderByFilter) {
   $scope.showBuildModal = function() {
     var modalInstance = $modal.open({
       templateUrl: 'buildModal.html',
-      controller: 'SelectModulesCtrl',
+      controller: SelectModulesCtrl,
       resolve: {
         modules: function(buildFilesService) {
           return buildFilesService.getModuleMap()
@@ -66,7 +66,7 @@ function MainCtrl($scope, $http, $document, $modal, orderByFilter) {
   $scope.showDownloadModal = function() {
     var modalInstance = $modal.open({
       templateUrl: 'downloadModal.html',
-      controller: 'DownloadCtrl'
+      controller: DownloadCtrl
     });
   };
 }
