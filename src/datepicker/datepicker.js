@@ -53,6 +53,11 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     case 'yyyy':
                         jformat = 'jYYYY';
                         break;
+                    case 'yy':
+                        jformat = 'jYY';
+                        break;
+                    case 'mm':
+                      jformat = 'jMM';
                     case 'EEE':
                     case 'EEEE':
                         jformat = 'E';
@@ -106,7 +111,11 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
             compareMonth: function(date1,date2){
                 var mDate1 = moment(date1);
                 var mDate2 = moment(date2);
-                return mDate1.format('jMM') - mDate2.format('jMM');
+
+              console.log(mDate1.format('jMM') , mDate2.format('jMM'));
+                return mDate1.format('jYYYY') - mDate2.format('jYYYY') != 0
+                  ? mDate1.format('jYYYY') - mDate2.format('jYYYY')
+                  :  mDate1.format('jMM') - mDate2.format('jMM');
             },
             compareYear: function(date1,date2){
                 var mDate1 = moment(date1);
