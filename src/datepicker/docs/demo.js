@@ -10,7 +10,7 @@ angular.module('ui.bootstrap.demo').controller('DatepickerDemoCtrl', function ($
 
   // Disable weekend selection
   $scope.disabled = function(date, mode) {
-    return ( mode === 'day' && ( date.getDay() === 0 || date.getDay() === 6 ) );
+    return ( mode === 'day' && ( date.getDay() === 4 || date.getDay() === 5 ) );
   };
 
   $scope.toggleMin = function() {
@@ -27,7 +27,7 @@ angular.module('ui.bootstrap.demo').controller('DatepickerDemoCtrl', function ($
 
   $scope.dateOptions = {
     formatYear: 'yy',
-    startingDay: 1
+    startingDay: 6
   };
 
   $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
@@ -36,5 +36,8 @@ angular.module('ui.bootstrap.demo').controller('DatepickerDemoCtrl', function ($
   $scope.rtl = false;
   $scope.togglePersian = function(){
       $scope.persian = !$scope.persian;
+  };
+  $scope.toggleDirection = function(){
+    $scope.rtl = !$scope.rtl;
   };
 });

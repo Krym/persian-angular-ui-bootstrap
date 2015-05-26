@@ -383,7 +383,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                 dateDisabled: '&',
                 customClass: '&',
                 shortcutPropagation: '&?',
-                rtl: '@?',
+                rtl: '=?',
                 persian: '=?'
             },
             require: ['datepicker', '?^ngModel'],
@@ -709,7 +709,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     }
 
                     scope.watchData = {};
-                    angular.forEach(['minDate', 'maxDate', 'datepickerMode', 'initDate', 'shortcutPropagation'], function( key ) {
+                    angular.forEach(['minDate', 'maxDate', 'datepickerMode', 'initDate', 'shortcutPropagation', 'rtl'], function( key ) {
                         if ( attrs[key] ) {
                             var getAttribute = $parse(attrs[key]);
                             scope.$parent.$watch(getAttribute, function(value){

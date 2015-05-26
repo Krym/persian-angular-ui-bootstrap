@@ -10,7 +10,7 @@
         <th ng-repeat="label in labels track by $index" class="text-center"><small aria-label="{{label.full}}">{{label.abbr}}</small></th>
     </tr>
     </thead>
-    <tbody>
+    <tbody style="direction: ltr!important;">
     <tr ng-repeat="row in rows track by $index">
         <td ng-show="showWeeks" class="text-center h6"><em>{{ weekNumbers[$index] }}</em></td>
         <td ng-repeat="dt in row track by dt.date" class="text-center" role="gridcell" id="{{dt.uid}}" aria-disabled="{{!!dt.disabled}}" ng-class="dt.customClass">

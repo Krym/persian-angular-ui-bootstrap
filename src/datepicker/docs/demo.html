@@ -1,16 +1,20 @@
 <div ng-controller="DatepickerDemoCtrl">
-    <pre>Selected date is: <em>{{dt | date:'fullDate' }}</em></pre>
+    <div ng-style="{'direction': rtl ? 'rtl' : 'ltr'}">
+
+
+    <pre ng-if="!persian">Selected date is: <em>{{dt | date:'fullDate' }}</em></pre>
+    <pre ng-if="persian">روز انتخاب شده: <em>{{dt | date:'fullDate' }}</em></pre>
 
     <h4>Inline</h4>
     <div style="display:inline-block; min-height:290px;">
-        <datepicker ng-model="dt" min-date="minDate" show-weeks="true" persian="persian" class="well well-sm"></datepicker>
+        <datepicker ng-model="dt" min-date="minDate" show-weeks="true" persian="persian" class="well well-sm" rtl="rtl"></datepicker>
     </div>
 
     <h4>Popup</h4>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6" ng-class="{'pull-right': rtl}">
             <p class="input-group">
-              <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="dt" is-open="opened" min-date="minDate" max-date="'2015-06-22'" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" close-text="Close" />
+              <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="dt" is-open="opened" min-date="minDate" max-date="'2015-06-22'" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true"  persian="persian" rtl="rtl" />
               <span class="input-group-btn">
                 <button type="button" class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
               </span>
@@ -18,15 +22,17 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-6" ng-class="{'pull-right': rtl}">
             <label>Format:</label> <select class="form-control" ng-model="format" ng-options="f for f in formats"><option></option></select>
         </div>
     </div>
 
     <hr />
     <button type="button" class="btn btn-sm btn-info" ng-click="today()">Today</button>
-    <button type="button" class="btn btn-sm btn-default" ng-click="dt = '2009-08-24'">2009-08-24</button>
+    <button type="button" class="btn btn-sm btn-default" ng-click="dt = '2009-06-15'">1388-03-25</button>
     <button type="button" class="btn btn-sm btn-danger" ng-click="clear()">Clear</button>
     <button type="button" class="btn btn-sm btn-default" ng-click="toggleMin()" tooltip="After today restriction">Min date</button>
     <button type="button" class="btn btn-sm btn-default" ng-click="togglePersian()" tooltip="Change Language to Persian">Toggle Language</button>
+    <button type="button" class="btn btn-sm btn-default" ng-click="toggleDirection()" tooltip="Change Direction of `div` and dataepicker">Toggle Direction</button>
+    </div>
 </div>
