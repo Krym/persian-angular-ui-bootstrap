@@ -172,7 +172,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
         maxDate: null,
         shortcutPropagation: false,
         rtl: false, //  add rtl option
-        persian: false //  add persian option
+    persian: true //  add persian option
     })
 
     .controller('DatepickerController', ['$scope', '$attrs', '$parse', '$interpolate', '$timeout', '$log', 'dateFilter',
