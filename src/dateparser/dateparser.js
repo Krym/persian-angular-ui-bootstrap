@@ -266,7 +266,7 @@ angular.module('ui.bootstrap.dateparser', [])
     }
 
     this.parse = function (input, format) {
-      console.log('parse:');
+
       input = moment(input, getJFormat(format)).format(format.toUpperCase()); // Change Jalali date to Gregorian
       if (!angular.isString(input) || !format) {
         return input;
