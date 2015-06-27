@@ -267,7 +267,7 @@ angular.module('ui.bootstrap.dateparser', [])
 
     this.parse = function (input, format) {
       console.log('parse:');
-      input = moment(input, getJFormat(format)).format(format.toUpperCase()); // 2013-8-25 16:40:00
+      input = moment(input, getJFormat(format)).format(format.toUpperCase()); // Change Jalali date to Gregorian
       if (!angular.isString(input) || !format) {
         return input;
       }
@@ -277,16 +277,11 @@ angular.module('ui.bootstrap.dateparser', [])
       if (!this.parsers[format]) {
         this.parsers[format] = createParser(format);
       }
-      console.log(input);
-      console.log(format);
+
       var parser = this.parsers[format],
         regex = parser.regex,
         map = parser.map,
         results = input.match(regex);
-      console.log(parser);
-      console.log(regex);
-      console.log(map);
-      console.log(results);
 
       if (results && results.length) {
         var fields = {year: 1900, month: 0, date: 1, hours: 0}, dt;
@@ -297,12 +292,7 @@ angular.module('ui.bootstrap.dateparser', [])
             mapper.apply.call(fields, results[i]);
           }
         }
-        //  convert input Jalali date to gregorian
-        //var tdt = moment(fields.year+'/'+fields.month+'/'+fields.date, 'jYYYY/jM/jD').format('YYYY-M-D') // 2013-8-25
-        //var arr = tdt.split('-');
-        //angular.forEach(arr,function(v,i){
-        //  arr[i] = parseInt(v);
-        //});
+
         if (isValid(fields.year, fields.month, fields.date)) {
           dt = new Date(fields.year, fields.month, fields.date, fields.hours);
         }
