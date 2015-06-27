@@ -243,7 +243,8 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                     if ( isValid ) {
                         this.activeDate = date;
                     } else {
-                        $log.error('Datepicker directive: "ng-model" value must be a Date object, a number of milliseconds since 01.01.1970 or a string representing an RFC2822 or ISO 8601 date.');
+                      console.log(ngModelCtrl.$viewValue);
+                      //$log.error('Datepicker directive: "ng-model" value must be a Date object, a number of milliseconds since 01.01.1970 or a string representing an RFC2822 or ISO 8601 date.');
                     }
                     ngModelCtrl.$setValidity('date', isValid);
                 }
@@ -647,9 +648,9 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
         showButtonBar: true
     })
 
-    .directive('datepickerPopup', ['$compile', '$parse', '$document', '$position', 'dateFilter', 'dateParser',
+  .directive('datepickerPopup', ['$compile', '$parse', '$document', '$position', 'dateFilter', 'jDateParser',
         'datepickerPopupConfig', 'jDateService',
-        function ($compile, $parse, $document, $position, dateFilter, dateParser, datepickerPopupConfig,jDateService) {
+    function ($compile, $parse, $document, $position, dateFilter, jDateParser, datepickerPopupConfig, jDateService) {
             return {
                 restrict: 'EA',
                 require: 'ngModel',
@@ -753,7 +754,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                         } else if (angular.isDate(viewValue) && !isNaN(viewValue)) {
                             return viewValue;
                         } else if (angular.isString(viewValue)) {
-                            var date = dateParser.parse(viewValue, dateFormat) || new Date(viewValue);
+                          var date = jDateParser.parse(viewValue, dateFormat) || new Date(viewValue);
                             if (isNaN(date)) {
                                 return undefined;
                             } else {
@@ -774,7 +775,7 @@ angular.module('ui.bootstrap.datepicker', ['ui.bootstrap.dateparser', 'ui.bootst
                         } else if (angular.isDate(value) && !isNaN(value)) {
                             return true;
                         } else if (angular.isString(value)) {
-                            var date = dateParser.parse(value, dateFormat) || new Date(value);
+                          var date = jDateParser.parse(value, dateFormat) || new Date(value);
                             return !isNaN(date);
                         } else {
                             return false;
