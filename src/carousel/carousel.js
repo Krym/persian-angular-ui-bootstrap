@@ -1,138 +1,127 @@
-/**
-* @ngdoc overview
-* @name ui.bootstrap.carousel
-*
-* @description
-* AngularJS version of an image carousel.
-*
-*/
-angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
-.controller('CarouselController', ['$scope', '$timeout', '$interval', '$transition', function ($scope, $timeout, $interval, $transition) {
+angular.module('ui.bootstrap.carousel', [])
+
+    .controller('UibCarouselController', ['$scope', '$element', '$interval', '$timeout', '$animate', function ($scope, $element, $interval, $timeout, $animate) {
   var self = this,
     slides = self.slides = $scope.slides = [],
-    currentIndex = -1,
-    currentInterval, isPlaying;
-  self.currentSlide = null;
+      SLIDE_DIRECTION = 'uib-slideDirection',
+      currentIndex = $scope.active,
+      currentInterval, isPlaying, bufferedTransitions = [];
 
   var destroyed = false;
-  /* direction: "prev" or "next" */
-  self.select = $scope.select = function(nextSlide, direction) {
-    var nextIndex = slides.indexOf(nextSlide);
-    //Decide direction if it's not given
-    if (direction === undefined) {
-      direction = nextIndex > currentIndex ? 'next' : 'prev';
-    }
-    if (nextSlide && nextSlide !== self.currentSlide) {
+
+        self.addSlide = function (slide, element) {
+            slides.push({
+                slide: slide,
+                element: element
+            });
+            slides.sort(function (a, b) {
+                return +a.slide.index > +b.slide.index;
+            });
+            //if this is the first slide or the slide is set to active, select it
+            if (slide.index === $scope.active || slides.length === 1 && !angular.isNumber($scope.active)) {
       if ($scope.$currentTransition) {
-        $scope.$currentTransition.cancel();
-        //Timeout so ng-class in template has time to fix classes for finished slide
-        $timeout(goNext);
-      } else {
-        goNext();
+          $scope.$currentTransition = null;
+      }
+
+                currentIndex = slide.index;
+                $scope.active = slide.index;
+                setActive(currentIndex);
+                self.select(slides[findSlideIndex(slide)]);
+                if (slides.length === 1) {
+                    $scope.play();
       }
     }
-    function goNext() {
-      // Scope has been destroyed, stop here.
-      if (destroyed) { return; }
-      //If we have a slide to transition from and we have a transition type and we're allowed, go
-      if (self.currentSlide && angular.isString(direction) && !$scope.noTransition && nextSlide.$element) {
-        //We shouldn't do class manip in here, but it's the same weird thing bootstrap does. need to fix sometime
-        nextSlide.$element.addClass(direction);
-        var reflow = nextSlide.$element[0].offsetWidth; //force reflow
-
-        //Set all other slides to stop doing their stuff for the new transition
-        angular.forEach(slides, function(slide) {
-          angular.extend(slide, {direction: '', entering: false, leaving: false, active: false});
-        });
-        angular.extend(nextSlide, {direction: direction, active: true, entering: true});
-        angular.extend(self.currentSlide||{}, {direction: direction, leaving: true});
-
-        $scope.$currentTransition = $transition(nextSlide.$element, {});
-        //We have to create new pointers inside a closure since next & current will change
-        (function(next,current) {
-          $scope.$currentTransition.then(
-            function(){ transitionDone(next, current); },
-            function(){ transitionDone(next, current); }
-          );
-        }(nextSlide, self.currentSlide));
-      } else {
-        transitionDone(nextSlide, self.currentSlide);
-      }
-      self.currentSlide = nextSlide;
-      currentIndex = nextIndex;
-      //every time you change slides, reset the timer
-      restartTimer();
-    }
-    function transitionDone(next, current) {
-      angular.extend(next, {direction: '', active: true, leaving: false, entering: false});
-      angular.extend(current||{}, {direction: '', active: false, leaving: false, entering: false});
-      $scope.$currentTransition = null;
-    }
-  };
-  $scope.$on('$destroy', function () {
-    destroyed = true;
-  });
-
-  /* Allow outside people to call indexOf on slides array */
-  self.indexOfSlide = function(slide) {
-    return slides.indexOf(slide);
   };
 
-  $scope.next = function() {
-    var newIndex = (currentIndex + 1) % slides.length;
-
-    //Prevent this user-triggered transition from occurring if there is already one in progress
-    if (!$scope.$currentTransition) {
-      return self.select(slides[newIndex], 'next');
-    }
+        self.getCurrentIndex = function () {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].slide.index === currentIndex) {
+                    return i;
+                }
+            }
   };
 
-  $scope.prev = function() {
-    var newIndex = currentIndex - 1 < 0 ? slides.length - 1 : currentIndex - 1;
+        self.next = $scope.next = function () {
+            var newIndex = (self.getCurrentIndex() + 1) % slides.length;
 
-    //Prevent this user-triggered transition from occurring if there is already one in progress
-    if (!$scope.$currentTransition) {
-      return self.select(slides[newIndex], 'prev');
+            if (newIndex === 0 && $scope.noWrap()) {
+                $scope.pause();
+                return;
     }
+
+            return self.select(slides[newIndex], 'next');
   };
 
-  $scope.isActive = function(slide) {
-     return self.currentSlide === slide;
+        self.prev = $scope.prev = function () {
+            var newIndex = self.getCurrentIndex() - 1 < 0 ? slides.length - 1 : self.getCurrentIndex() - 1;
+
+            if ($scope.noWrap() && newIndex === slides.length - 1) {
+                $scope.pause();
+                return;
+    }
+
+            return self.select(slides[newIndex], 'prev');
   };
 
-  $scope.$watch('interval', restartTimer);
-  $scope.$on('$destroy', resetTimer);
+        self.removeSlide = function (slide) {
+            var index = findSlideIndex(slide);
 
-  function restartTimer() {
-    resetTimer();
-    var interval = +$scope.interval;
-    if (!isNaN(interval) && interval > 0) {
-      currentInterval = $interval(timerFn, interval);
+            var bufferedIndex = bufferedTransitions.indexOf(slides[index]);
+            if (bufferedIndex !== -1) {
+                bufferedTransitions.splice(bufferedIndex, 1);
     }
-  }
 
-  function resetTimer() {
-    if (currentInterval) {
-      $interval.cancel(currentInterval);
-      currentInterval = null;
+            //get the index of the slide inside the carousel
+            slides.splice(index, 1);
+            if (slides.length > 0 && currentIndex === index) {
+                if (index >= slides.length) {
+                    currentIndex = slides.length - 1;
+                    $scope.active = currentIndex;
+                    setActive(currentIndex);
+                    self.select(slides[slides.length - 1]);
+                } else {
+                    currentIndex = index;
+                    $scope.active = currentIndex;
+                    setActive(currentIndex);
+                    self.select(slides[index]);
+                }
+            } else if (currentIndex > index) {
+                currentIndex--;
+                $scope.active = currentIndex;
     }
-  }
 
-  function timerFn() {
-    var interval = +$scope.interval;
-    if (isPlaying && !isNaN(interval) && interval > 0) {
-      $scope.next();
-    } else {
-      $scope.pause();
+            //clean the active value when no more slide
+            if (slides.length === 0) {
+                currentIndex = null;
+                $scope.active = null;
+                clearBufferedTransitions();
     }
-  }
+        };
 
-  $scope.play = function() {
-    if (!isPlaying) {
-      isPlaying = true;
-      restartTimer();
+        /* direction: "prev" or "next" */
+        self.select = $scope.select = function (nextSlide, direction) {
+            var nextIndex = findSlideIndex(nextSlide.slide);
+            //Decide direction if it's not given
+            if (direction === undefined) {
+                direction = nextIndex > self.getCurrentIndex() ? 'next' : 'prev';
     }
+            //Prevent this user-triggered transition from occurring if there is already one in progress
+            if (nextSlide.slide.index !== currentIndex && !$scope.$currentTransition) {
+                goNext(nextSlide.slide, nextIndex, direction);
+            } else if (nextSlide && nextSlide.slide.index !== currentIndex && $scope.$currentTransition) {
+                bufferedTransitions.push(slides[nextIndex]);
+            }
   };
+
+        /* Allow outside people to call indexOf on slides array */
+        $scope.indexOfSlide = function (slide) {
+            return +slide.slide.index;
+        };
+
+        $scope.isActive = function (slide) {
+            return $scope.active === slide.slide.index;
+        };
+
   $scope.pause = function() {
     if (!$scope.noPause) {
       isPlaying = false;
@@ -140,141 +129,175 @@ angular.module('ui.bootstrap.carousel', ['ui.bootstrap.transition'])
     }
   };
 
-  self.addSlide = function(slide, element) {
-    slide.$element = element;
-    slides.push(slide);
-    //if this is the first slide or the slide is set to active, select it
-    if(slides.length === 1 || slide.active) {
-      self.select(slides[slides.length-1]);
-      if (slides.length == 1) {
-        $scope.play();
-      }
-    } else {
-      slide.active = false;
+        $scope.play = function () {
+            if (!isPlaying) {
+                isPlaying = true;
+                restartTimer();
     }
   };
 
-  self.removeSlide = function(slide) {
-    //get the index of the slide inside the carousel
-    var index = slides.indexOf(slide);
-    slides.splice(index, 1);
-    if (slides.length > 0 && slide.active) {
-      if (index >= slides.length) {
-        self.select(slides[index-1]);
-      } else {
+        $scope.$on('$destroy', function () {
+            destroyed = true;
+            resetTimer();
+        });
+
+        $scope.$watch('noTransition', function (noTransition) {
+            $animate.enabled($element, !noTransition);
+        });
+
+        $scope.$watch('interval', restartTimer);
+
+        $scope.$watchCollection('slides', resetTransition);
+
+        $scope.$watch('active', function (index) {
+            if (angular.isNumber(index) && currentIndex !== index) {
+                for (var i = 0; i < slides.length; i++) {
+                    if (slides[i].slide.index === index) {
+                        index = i;
+                        break;
+                    }
+                }
+
+                var slide = slides[index];
+                if (slide) {
+                    currentIndex = index;
+                    setActive(index);
         self.select(slides[index]);
       }
-    } else if (currentIndex > index) {
-      currentIndex--;
     }
-  };
+        });
 
-}])
+        function clearBufferedTransitions() {
+            while (bufferedTransitions.length) {
+                bufferedTransitions.shift();
+            }
+        }
 
-/**
- * @ngdoc directive
- * @name ui.bootstrap.carousel.directive:carousel
- * @restrict EA
- *
- * @description
- * Carousel is the outer container for a set of image 'slides' to showcase.
- *
- * @param {number=} interval The time, in milliseconds, that it will take the carousel to go to the next slide.
- * @param {boolean=} noTransition Whether to disable transitions on the carousel.
- * @param {boolean=} noPause Whether to disable pausing on the carousel (by default, the carousel interval pauses on hover).
- *
- * @example
-<example module="ui.bootstrap">
-  <file name="index.html">
-    <carousel>
-      <slide>
-        <img src="http://placekitten.com/150/150" style="margin:auto;">
-        <div class="carousel-caption">
-          <p>Beautiful!</p>
-        </div>
-      </slide>
-      <slide>
-        <img src="http://placekitten.com/100/150" style="margin:auto;">
-        <div class="carousel-caption">
-          <p>D'aww!</p>
-        </div>
-      </slide>
-    </carousel>
-  </file>
-  <file name="demo.css">
-    .carousel-indicators {
-      top: auto;
-      bottom: 15px;
+        function getSlideByIndex(index) {
+            for (var i = 0, l = slides.length; i < l; ++i) {
+                if (slides[i].index === index) {
+                    return slides[i];
+                }
     }
-  </file>
-</example>
- */
-.directive('carousel', [function() {
+        }
+
+        function setActive(index) {
+            for (var i = 0; i < slides.length; i++) {
+                slides[i].slide.active = i === index;
+            }
+        }
+
+        function goNext(slide, index, direction) {
+            if (destroyed) {
+                return;
+            }
+
+            angular.extend(slide, {direction: direction});
+            angular.extend(slides[currentIndex].slide || {}, {direction: direction});
+            if ($animate.enabled($element) && !$scope.$currentTransition &&
+                slides[index].element && self.slides.length > 1) {
+                slides[index].element.data(SLIDE_DIRECTION, slide.direction);
+                var currentIdx = self.getCurrentIndex();
+
+                if (angular.isNumber(currentIdx) && slides[currentIdx].element) {
+                    slides[currentIdx].element.data(SLIDE_DIRECTION, slide.direction);
+                }
+
+                $scope.$currentTransition = true;
+                $animate.on('addClass', slides[index].element, function (element, phase) {
+                    if (phase === 'close') {
+                        $scope.$currentTransition = null;
+                        $animate.off('addClass', element);
+                        if (bufferedTransitions.length) {
+                            var nextSlide = bufferedTransitions.pop().slide;
+                            var nextIndex = nextSlide.index;
+                            var nextDirection = nextIndex > self.getCurrentIndex() ? 'next' : 'prev';
+                            clearBufferedTransitions();
+
+                            goNext(nextSlide, nextIndex, nextDirection);
+                        }
+                    }
+                });
+            }
+
+            $scope.active = slide.index;
+            currentIndex = slide.index;
+            setActive(index);
+
+            //every time you change slides, reset the timer
+            restartTimer();
+        }
+
+        function findSlideIndex(slide) {
+            for (var i = 0; i < slides.length; i++) {
+                if (slides[i].slide === slide) {
+                    return i;
+                }
+            }
+        }
+
+        function resetTimer() {
+            if (currentInterval) {
+                $interval.cancel(currentInterval);
+                currentInterval = null;
+            }
+        }
+
+        function resetTransition(slides) {
+            if (!slides.length) {
+                $scope.$currentTransition = null;
+                clearBufferedTransitions();
+            }
+        }
+
+        function restartTimer() {
+            resetTimer();
+            var interval = +$scope.interval;
+            if (!isNaN(interval) && interval > 0) {
+                currentInterval = $interval(timerFn, interval);
+            }
+        }
+
+        function timerFn() {
+            var interval = +$scope.interval;
+            if (isPlaying && !isNaN(interval) && interval > 0 && slides.length) {
+                $scope.next();
+            } else {
+                $scope.pause();
+            }
+        }
+    }])
+
+    .directive('uibCarousel', function () {
   return {
-    restrict: 'EA',
     transclude: true,
     replace: true,
-    controller: 'CarouselController',
-    require: 'carousel',
-    templateUrl: 'template/carousel/carousel.html',
+      controller: 'UibCarouselController',
+      controllerAs: 'carousel',
+      templateUrl: function (element, attrs) {
+          return attrs.templateUrl || 'uib/template/carousel/carousel.html';
+      },
     scope: {
+        active: '=',
       interval: '=',
       noTransition: '=',
-      noPause: '='
+        noPause: '=',
+        noWrap: '&'
     }
   };
-}])
+    })
 
-/**
- * @ngdoc directive
- * @name ui.bootstrap.carousel.directive:slide
- * @restrict EA
- *
- * @description
- * Creates a slide inside a {@link ui.bootstrap.carousel.directive:carousel carousel}.  Must be placed as a child of a carousel element.
- *
- * @param {boolean=} active Model binding, whether or not this slide is currently active.
- *
- * @example
-<example module="ui.bootstrap">
-  <file name="index.html">
-<div ng-controller="CarouselDemoCtrl">
-  <carousel>
-    <slide ng-repeat="slide in slides" active="slide.active">
-      <img ng-src="{{slide.image}}" style="margin:auto;">
-      <div class="carousel-caption">
-        <h4>Slide {{$index}}</h4>
-        <p>{{slide.text}}</p>
-      </div>
-    </slide>
-  </carousel>
-  Interval, in milliseconds: <input type="number" ng-model="myInterval">
-  <br />Enter a negative number to stop the interval.
-</div>
-  </file>
-  <file name="script.js">
-function CarouselDemoCtrl($scope) {
-  $scope.myInterval = 5000;
-}
-  </file>
-  <file name="demo.css">
-    .carousel-indicators {
-      top: auto;
-      bottom: 15px;
-    }
-  </file>
-</example>
-*/
-
-.directive('slide', function() {
+    .directive('uibSlide', function () {
   return {
-    require: '^carousel',
-    restrict: 'EA',
+      require: '^uibCarousel',
     transclude: true,
     replace: true,
-    templateUrl: 'template/carousel/slide.html',
+      templateUrl: function (element, attrs) {
+          return attrs.templateUrl || 'uib/template/carousel/slide.html';
+      },
     scope: {
-      active: '=?'
+        actual: '=?',
+        index: '=?'
     },
     link: function (scope, element, attrs, carouselCtrl) {
       carouselCtrl.addSlide(scope, element);
@@ -282,12 +305,57 @@ function CarouselDemoCtrl($scope) {
       scope.$on('$destroy', function() {
         carouselCtrl.removeSlide(scope);
       });
-
-      scope.$watch('active', function(active) {
-        if (active) {
-          carouselCtrl.select(scope);
-        }
-      });
     }
   };
-});
+    })
+
+    .animation('.item', ['$animateCss',
+        function ($animateCss) {
+            var SLIDE_DIRECTION = 'uib-slideDirection';
+
+            function removeClass(element, className, callback) {
+                element.removeClass(className);
+                if (callback) {
+                    callback();
+    }
+            }
+
+            return {
+                beforeAddClass: function (element, className, done) {
+                    if (className === 'active') {
+                        var stopped = false;
+                        var direction = element.data(SLIDE_DIRECTION);
+                        var directionClass = direction === 'next' ? 'left' : 'right';
+                        var removeClassFn = removeClass.bind(this, element,
+                            directionClass + ' ' + direction, done);
+                        element.addClass(direction);
+
+                        $animateCss(element, {addClass: directionClass})
+                            .start()
+                            .done(removeClassFn);
+
+                        return function () {
+                            stopped = true;
+                        };
+                    }
+                    done();
+                },
+                beforeRemoveClass: function (element, className, done) {
+                    if (className === 'active') {
+                        var stopped = false;
+                        var direction = element.data(SLIDE_DIRECTION);
+                        var directionClass = direction === 'next' ? 'left' : 'right';
+                        var removeClassFn = removeClass.bind(this, element, directionClass, done);
+
+                        $animateCss(element, {addClass: directionClass})
+                            .start()
+                            .done(removeClassFn);
+
+                        return function () {
+                            stopped = true;
+                        };
+                    }
+                    done();
+                }
+  };
+        }]);

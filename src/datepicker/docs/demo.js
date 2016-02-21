@@ -4,40 +4,80 @@ angular.module('ui.bootstrap.demo').controller('DatepickerDemoCtrl', function ($
   };
   $scope.today();
 
-  $scope.clear = function () {
+    $scope.clear = function () {
     $scope.dt = null;
   };
 
   // Disable weekend selection
   $scope.disabled = function(date, mode) {
-    return ( mode === 'day' && ( date.getDay() === 4 || date.getDay() === 5 ) );
+      return mode === 'day' && (date.getDay() === 0 || date.getDay() === 6);
   };
 
   $scope.toggleMin = function() {
     $scope.minDate = $scope.minDate ? null : new Date();
   };
+
   $scope.toggleMin();
+    $scope.maxDate = new Date(2020, 5, 22);
 
-  $scope.open = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
+    $scope.open1 = function () {
+        $scope.popup1.opened = true;
+    };
 
-    $scope.opened = true;
+    $scope.open2 = function () {
+        $scope.popup2.opened = true;
   };
+
+    $scope.setDate = function (year, month, day) {
+        $scope.dt = new Date(year, month, day);
+    };
 
   $scope.dateOptions = {
     formatYear: 'yy',
-    startingDay: 6
+      startingDay: 1
   };
 
   $scope.formats = ['dd-MMMM-yyyy', 'yyyy/MM/dd', 'dd.MM.yyyy', 'shortDate'];
   $scope.format = $scope.formats[0];
-  $scope.persian = false;
-  $scope.rtl = false;
-  $scope.togglePersian = function(){
-      $scope.persian = !$scope.persian;
+    $scope.altInputFormats = ['M!/d!/yyyy'];
+
+    $scope.popup1 = {
+        opened: false
   };
-  $scope.toggleDirection = function(){
-    $scope.rtl = !$scope.rtl;
+
+    $scope.popup2 = {
+        opened: false
+    };
+
+    var tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    var afterTomorrow = new Date();
+    afterTomorrow.setDate(tomorrow.getDate() + 1);
+    $scope.events =
+        [
+            {
+                date: tomorrow,
+                status: 'full'
+            },
+            {
+                date: afterTomorrow,
+                status: 'partially'
+            }
+        ];
+
+    $scope.getDayClass = function (date, mode) {
+        if (mode === 'day') {
+            var dayToCheck = new Date(date).setHours(0, 0, 0, 0);
+
+            for (var i = 0; i < $scope.events.length; i++) {
+                var currentDay = new Date($scope.events[i].date).setHours(0, 0, 0, 0);
+
+                if (dayToCheck === currentDay) {
+                    return $scope.events[i].status;
+                }
+            }
+        }
+
+        return '';
   };
 });

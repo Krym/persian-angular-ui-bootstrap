@@ -1,69 +1,95 @@
-angular.module('ui.bootstrap.collapse', ['ui.bootstrap.transition'])
+angular.module('ui.bootstrap.collapse', [])
 
-  .directive('collapse', ['$transition', function ($transition) {
-
+    .directive('uibCollapse', ['$animate', '$q', '$parse', '$injector', function ($animate, $q, $parse, $injector) {
+        var $animateCss = $injector.has('$animateCss') ? $injector.get('$animateCss') : null;
     return {
-      link: function (scope, element, attrs) {
+        link: function (scope, element, attrs) {
+            var expandingExpr = $parse(attrs.expanding),
+                expandedExpr = $parse(attrs.expanded),
+                collapsingExpr = $parse(attrs.collapsing),
+                collapsedExpr = $parse(attrs.collapsed);
 
-        var initialAnimSkip = true;
-        var currentTransition;
-
-        function doTransition(change) {
-          var newTransition = $transition(element, change);
-          if (currentTransition) {
-            currentTransition.cancel();
-          }
-          currentTransition = newTransition;
-          newTransition.then(newTransitionDone, newTransitionDone);
-          return newTransition;
-
-          function newTransitionDone() {
-            // Make sure it's this transition, otherwise, leave it alone.
-            if (currentTransition === newTransition) {
-              currentTransition = undefined;
-            }
-          }
+            if (!scope.$eval(attrs.uibCollapse)) {
+                element.addClass('in')
+                    .addClass('collapse')
+                    .attr('aria-expanded', true)
+                    .attr('aria-hidden', false)
+                    .css({height: 'auto'});
         }
 
         function expand() {
-          if (initialAnimSkip) {
-            initialAnimSkip = false;
-            expandDone();
-          } else {
-            element.removeClass('collapse').addClass('collapsing');
-            doTransition({ height: element[0].scrollHeight + 'px' }).then(expandDone);
+            if (element.hasClass('collapse') && element.hasClass('in')) {
+                return;
           }
+
+            $q.resolve(expandingExpr(scope))
+                .then(function () {
+                    element.removeClass('collapse')
+                        .addClass('collapsing')
+                        .attr('aria-expanded', true)
+                        .attr('aria-hidden', false);
+
+                    if ($animateCss) {
+                        $animateCss(element, {
+                            addClass: 'in',
+                            easing: 'ease',
+                            to: {height: element[0].scrollHeight + 'px'}
+                        }).start()['finally'](expandDone);
+                    } else {
+                        $animate.addClass(element, 'in', {
+                            to: {height: element[0].scrollHeight + 'px'}
+                        }).then(expandDone);
+                    }
+                });
         }
 
         function expandDone() {
-          element.removeClass('collapsing');
-          element.addClass('collapse in');
-          element.css({height: 'auto'});
+            element.removeClass('collapsing')
+                .addClass('collapse')
+                .css({height: 'auto'});
+            expandedExpr(scope);
         }
 
         function collapse() {
-          if (initialAnimSkip) {
-            initialAnimSkip = false;
-            collapseDone();
-            element.css({height: 0});
-          } else {
-            // CSS transitions don't work with height: auto, so we have to manually change the height to a specific value
-            element.css({ height: element[0].scrollHeight + 'px' });
-            //trigger reflow so a browser realizes that height was updated from auto to a specific value
-            var x = element[0].offsetWidth;
+            if (!element.hasClass('collapse') && !element.hasClass('in')) {
+                return collapseDone();
+            }
 
-            element.removeClass('collapse in').addClass('collapsing');
+            $q.resolve(collapsingExpr(scope))
+                .then(function () {
+                    element
+                        // IMPORTANT: The height must be set before adding "collapsing" class.
+                        // Otherwise, the browser attempts to animate from height 0 (in
+                        // collapsing class) to the given height here.
+                        .css({height: element[0].scrollHeight + 'px'})
+                        // initially all panel collapse have the collapse class, this removal
+                        // prevents the animation from jumping to collapsed state
+                        .removeClass('collapse')
+                        .addClass('collapsing')
+                        .attr('aria-expanded', false)
+                        .attr('aria-hidden', true);
 
-            doTransition({ height: 0 }).then(collapseDone);
-          }
+                    if ($animateCss) {
+                        $animateCss(element, {
+                            removeClass: 'in',
+                            to: {height: '0'}
+                        }).start()['finally'](collapseDone);
+                    } else {
+                        $animate.removeClass(element, 'in', {
+                            to: {height: '0'}
+                        }).then(collapseDone);
+                    }
+                });
         }
 
         function collapseDone() {
-          element.removeClass('collapsing');
-          element.addClass('collapse');
+            element.css({height: '0'}); // Required so that collapse works when animation is disabled
+            element.removeClass('collapsing')
+                .addClass('collapse');
+            collapsedExpr(scope);
         }
 
-        scope.$watch(attrs.collapse, function (shouldCollapse) {
+            scope.$watch(attrs.uibCollapse, function (shouldCollapse) {
           if (shouldCollapse) {
             collapse();
           } else {
