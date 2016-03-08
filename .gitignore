@@ -15,8 +15,9 @@ pids
 logs
 results
 dist
+test
 # test coverage files
-coverage/
+.coverage/
 
 node_modules
 npm-debug.log

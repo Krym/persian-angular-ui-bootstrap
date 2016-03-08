@@ -26,8 +26,5 @@
     "spyOn"      : false,
     "inject"     : false,
     "it"         : false
-  },
-  "predef": [
-      "moment"
-  ]
+  }
 }
